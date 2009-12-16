@@ -1,6 +1,6 @@
 #!/usr/sbin/dtrace -s
 
-syscall::open:entry /execname=="nobud"/
+pid$1::RapidPoller??PollLoop():761
 {
 	printf("%s %s",execname,copyinstr(arg0));
 }

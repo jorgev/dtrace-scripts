@@ -1,3 +1,5 @@
+#!/usr/sbin/dtrace -s
+
 pid123:libBlack:black_box:entry
 {
 	@hits = count();
