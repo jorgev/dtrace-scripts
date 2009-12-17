@@ -1,7 +1,7 @@
 #!/usr/sbin/dtrace -s
 
-pid$1::RapidPoller??PollLoop():761
+pid$1::RapidPoller??PollLoop():720
 {
-	printf("%s %s",execname,copyinstr(arg0));
+	printf("%Y: %s %s", walltimestamp, execname, copyinstr(arg0));
 }
 
