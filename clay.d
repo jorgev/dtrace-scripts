@@ -12,14 +12,14 @@ dtrace:::BEGIN
 }
 
 fbt::hfs_vnop_read:entry
-/execname == "pdiFilterTest"/
+/execname == "kernel_task"/
 {
 	this->read = (struct vnop_read_args *)arg0;
 	printf("R %12d %8d %s\n", this->read->a_uio->uio_offset, this->read->a_uio->uio_resid_64, stringof(this->read->a_vp->v_name));
 }
 
 fbt::hfs_vnop_write:entry
-/execname == "pdiFilterTest"/
+/execname == "kernel_task"/
 {
 	this->write = (struct vnop_write_args *)arg0;
 	printf("W %12d %8d %s\n", this->write->a_uio->uio_offset, this->write->a_uio->uio_resid_64, stringof(this->write->a_vp->v_name));
