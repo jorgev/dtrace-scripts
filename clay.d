@@ -36,12 +36,11 @@ fbt::hfs_vnop_write:entry
 
 fbt::hfs_vnop_read:return,
 fbt::hfs_vnop_write:return
-/execname == "kernel_task" && self->path == "nvme.data" && self->start && (timestamp - self->start) >= min_ns/
+/execname == "kernel_task" && self->path && self->path == "nvme.data" && self->start && (timestamp - self->start) >= min_ns/
 {
 	this->iotime = (timestamp - self->start) / 1000000;;
 	this->dir = probefunc == "hfs_vnop_read" ? "R" : "W";
-	printf("%s %12d %8d %4d %s\n", this->dir, self->offset, self->bytes, this->iotime,
-			self->path != NULL ? stringof(self->path) : "<null>");
+	printf("%s %12d %8d %4d %s\n", this->dir, self->offset, self->bytes, this->iotime, stringof(self->path));
 	self->path = 0;
 	self->bytes = 0;
 	self->offset = 0;
