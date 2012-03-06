@@ -5,22 +5,39 @@
  */
 
 #pragma D option quiet
+#pragma D option defaultargs
+#pragma D option switchrate=10hz
 
 dtrace:::BEGIN
 {
-	printf("O %12s %8s %s\n", "OFFSET", "COUNT", "FILENAME");
+	printf("O %12s %8s %4s %s\n", "OFFSET", "COUNT", "MS", "FILENAME");
 }
 
 fbt::hfs_vnop_read:entry
 /execname == "kernel_task"/
 {
 	this->read = (struct vnop_read_args *)arg0;
-	printf("R %12d %8d %s\n", this->read->a_uio->uio_offset, this->read->a_uio->uio_resid_64, stringof(this->read->a_vp->v_name));
+	self->path = this->read->a_vp->v_name;
+	self->bytes = this->read->a_uio->uio_resid_64;
+	self->offset = this->read->a_uio->uio_offset;
+	self->start = timestamp;
 }
 
 fbt::hfs_vnop_write:entry
 /execname == "kernel_task"/
 {
 	this->write = (struct vnop_write_args *)arg0;
-	printf("W %12d %8d %s\n", this->write->a_uio->uio_offset, this->write->a_uio->uio_resid_64, stringof(this->write->a_vp->v_name));
+	self->path = this->write->a_vp->v_name;
+	self->bytes = this->write->a_uio->uio_resid_64;
+	self->offset = this->write->a_uio->uio_offset;
+	self->start = timestamp;
+}
+fbt::hfs_vnop_read:return,
+fbt::hfs_vnop_write:return
+/execname == "kernel_task"/
+{
+	this->iotime = (timestamp - self->start) / 1000000;;
+	this->dir = probefunc == "hfs_vnop_read" ? "R" : "W";
+	printf("%s %12d %8d %4d %s\n", this->dir, self->offset, self->bytes, this->iotime,
+			self->path != NULL ? stringof(self->path) : "<null>");
 }
