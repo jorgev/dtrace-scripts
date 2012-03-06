@@ -33,6 +33,7 @@ fbt::hfs_vnop_write:entry
 	self->offset = this->write->a_uio->uio_offset;
 	self->start = timestamp;
 }
+
 fbt::hfs_vnop_read:return,
 fbt::hfs_vnop_write:return
 /execname == "kernel_task" && self->start && (timestamp - self->start) >= min_ns/
