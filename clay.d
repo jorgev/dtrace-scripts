@@ -11,6 +11,7 @@
 dtrace:::BEGIN
 {
 	printf("O %12s %8s %4s %s\n", "OFFSET", "COUNT", "MS", "FILENAME");
+	min_ns = $1 * 1000000;
 }
 
 fbt::hfs_vnop_read:entry
@@ -34,10 +35,14 @@ fbt::hfs_vnop_write:entry
 }
 fbt::hfs_vnop_read:return,
 fbt::hfs_vnop_write:return
-/execname == "kernel_task"/
+/execname == "kernel_task" && self->start && (timestamp - self->start) >= min_ns/
 {
 	this->iotime = (timestamp - self->start) / 1000000;;
 	this->dir = probefunc == "hfs_vnop_read" ? "R" : "W";
 	printf("%s %12d %8d %4d %s\n", this->dir, self->offset, self->bytes, this->iotime,
 			self->path != NULL ? stringof(self->path) : "<null>");
+	self->path = 0;
+	self->bytes = 0;
+	self->offset = 0;
+	self->start = 0;
 }
