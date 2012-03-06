@@ -36,7 +36,7 @@ fbt::hfs_vnop_write:entry
 
 fbt::hfs_vnop_read:return,
 fbt::hfs_vnop_write:return
-/execname == "kernel_task" && self->start && (timestamp - self->start) >= min_ns/
+/execname == "kernel_task" && self->path == "nvme.data" && self->start && (timestamp - self->start) >= min_ns/
 {
 	this->iotime = (timestamp - self->start) / 1000000;;
 	this->dir = probefunc == "hfs_vnop_read" ? "R" : "W";
